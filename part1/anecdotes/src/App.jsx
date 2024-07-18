@@ -8,6 +8,7 @@ const Anecdote = ({ anecdotes, selected }) => {
 const Votes = ({ votes }) => {
   return <div>has {votes} votes</div>;
 };
+const Title = ({ text }) => <h1>{text}</h1>;
 
 const App = () => {
   const anecdotes = [
@@ -23,20 +24,39 @@ const App = () => {
 
   const [selected, setSelected] = useState(0);
   const [votes, setVotes] = useState(0);
+  const [points, setPoints] = useState({
+    0: 0,
+    1: 0,
+    2: 0,
+    3: 0,
+    4: 0,
+    5: 0,
+    6: 0,
+    7: 0,
+  });
   const handleNextAnecdote = () => {
     const randomNumber = Math.floor(Math.random() * anecdotes.length);
     setSelected(randomNumber);
+    setVotes(points[randomNumber]);
   };
   const handleVote = () => {
-    setVotes(votes + 1);
+    const pointsCopy = { ...points, [selected]: points[selected] + 1 };
+    setPoints(pointsCopy);
+    setVotes(points[selected] + 1);
   };
+  const mostVoted = Object.keys(points).reduce((a, b) =>
+    points[a] > points[b] ? a : b
+  );
 
   return (
     <div>
+      <Title text={"Anecdote of the day"}></Title>
       <Anecdote anecdotes={anecdotes} selected={selected} />
       <Votes votes={votes} />
       <Button text={"vote"} handleClick={handleVote} />
       <Button text={"next anecdote"} handleClick={handleNextAnecdote} />
+      <Title text={"Anecdote with most votes"}></Title>
+      <Anecdote anecdotes={anecdotes} selected={mostVoted} />
     </div>
   );
 };

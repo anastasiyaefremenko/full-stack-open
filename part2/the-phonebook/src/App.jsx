@@ -1,15 +1,7 @@
 import { useState } from "react";
 import PersonForm from "./components/PersonForm";
 import Persons from "./components/Persons";
-
-const Filter = ({ searchInput, handleSearchInputChange }) => {
-  return (
-    <div>
-      filter shown with{" "}
-      <input value={searchInput} onChange={handleSearchInputChange} />
-    </div>
-  );
-};
+import Filter from "./components/Filter";
 
 const App = () => {
   const [persons, setPersons] = useState([

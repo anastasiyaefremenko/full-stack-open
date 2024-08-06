@@ -1,4 +1,4 @@
-const Persons = ({ persons, searchInput }) => {
+const Persons = ({ persons, searchInput, handleDeletion }) => {
   const l = searchInput.length;
   const personsToShow = persons.filter(
     (person) =>
@@ -7,9 +7,10 @@ const Persons = ({ persons, searchInput }) => {
   return (
     <>
       {personsToShow.map((person) => (
-        <p key={person.name}>
+        <div key={person.name}>
           {person.name} {person.number}
-        </p>
+          <button onClick={() => handleDeletion(person)}>delete</button>
+        </div>
       ))}
     </>
   );

@@ -3,6 +3,7 @@ import axios from "axios";
 import PersonForm from "./components/PersonForm";
 import Persons from "./components/Persons";
 import Filter from "./components/Filter";
+import phonebookService from "./services/phonebook";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
@@ -11,21 +12,47 @@ const App = () => {
   const [searchInput, setSearchInput] = useState("");
 
   useEffect(() => {
-    axios.get("http://localhost:3001/persons").then((response) => {
-      setPersons(response.data);
+    phonebookService.getNumbers().then((numbers) => {
+      setPersons(numbers);
     });
   }, []);
+
+  const updateContact = () => {
+    const contact = persons.find((p) => p.name === newName);
+    const changedContact = { ...contact, number: newNumber };
+    phonebookService
+      .update(changedContact.id, changedContact)
+      .then((updatedContact) => {
+        setPersons(
+          persons.map((person) =>
+            person.id !== changedContact.id ? person : updatedContact
+          )
+        );
+        setNewName("");
+        setNewNumber("");
+      });
+  };
 
   const addPerson = (event) => {
     event.preventDefault();
     const nameAlreadyAdded = !!persons.find(
       (person) => person["name"] === newName
     );
-    if (nameAlreadyAdded)
-      return alert(`${newName} is already added to phonebook`);
-    setPersons(persons.concat({ name: newName, number: newNumber }));
-    setNewName("");
-    setNewNumber("");
+    if (nameAlreadyAdded) {
+      const update = confirm(
+        `${newName} is already added to phonebook, replace the old number with a new one?`
+      );
+      if (!update) return;
+      updateContact();
+      return;
+    }
+
+    const newContact = { name: newName, number: newNumber };
+    phonebookService.addNumber(newContact).then((returnedContact) => {
+      setPersons(persons.concat(returnedContact));
+      setNewName("");
+      setNewNumber("");
+    });
   };
   const handleNameChange = (event) => {
     setNewName(event.target.value);
@@ -35,6 +62,14 @@ const App = () => {
   };
   const handleSearchInputChange = (event) => {
     setSearchInput(event.target.value);
+  };
+  const handleDeletion = (person) => {
+    const result = confirm(`Delete ${person.name} ?`);
+    if (result) {
+      phonebookService.deleteContact(person.id).then((deletedContact) => {
+        setPersons(persons.filter((p) => p.id !== deletedContact.id));
+      });
+    }
   };
 
   return (
@@ -53,7 +88,11 @@ const App = () => {
         handleNumberChange={handleNumberChange}
       />
       <h3>Numbers</h3>
-      <Persons persons={persons} searchInput={searchInput} />
+      <Persons
+        persons={persons}
+        searchInput={searchInput}
+        handleDeletion={handleDeletion}
+      />
     </div>
   );
 };

@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
 import PersonForm from "./components/PersonForm";
 import Persons from "./components/Persons";
 import Filter from "./components/Filter";
+import Notification from "./components/Notification";
 import phonebookService from "./services/phonebook";
 
 const App = () => {
@@ -10,6 +10,7 @@ const App = () => {
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
   const [searchInput, setSearchInput] = useState("");
+  const [notification, setNotification] = useState(null);
 
   useEffect(() => {
     phonebookService.getNumbers().then((numbers) => {
@@ -30,7 +31,21 @@ const App = () => {
         );
         setNewName("");
         setNewNumber("");
+        showNotification(`${newName}'s number has been changed`, "green");
+      })
+      .catch((error) => {
+        showNotification(
+          `Information of ${newName} has already been removed from server`,
+          "red"
+        );
+        setPersons(persons.filter((p) => p.id !== changedContact.id));
       });
+  };
+  const showNotification = (message, color) => {
+    setNotification({ message, color });
+    setTimeout(() => {
+      setNotification(null);
+    }, 5000);
   };
 
   const addPerson = (event) => {
@@ -50,6 +65,7 @@ const App = () => {
     const newContact = { name: newName, number: newNumber };
     phonebookService.addNumber(newContact).then((returnedContact) => {
       setPersons(persons.concat(returnedContact));
+      showNotification(`Added ${returnedContact.name}`, "green");
       setNewName("");
       setNewNumber("");
     });
@@ -75,6 +91,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification notification={notification}></Notification>
       <Filter
         searchInput={searchInput}
         handleSearchInputChange={handleSearchInputChange}
